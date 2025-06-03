@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f9f9f9;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+select, button {
+    padding: 8px;
+    margin: 10px 0;
+}
+.results ul {
+    list-style: none;
+    padding: 0;
+}
+.results li {
+    background: #efefef;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 8px;
+}
+.pagination a {
+    margin: 0 5px;
+    text-decoration: none;
+    padding: 4px 8px;
+    background: #ddd;
+    border-radius: 4px;
+}
+.pagination a.active {
+    background: #333;
+    color: white;
+}
