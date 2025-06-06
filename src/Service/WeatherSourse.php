@@ -1,30 +1,29 @@
 <?php
 namespace Src\Service;
 
+class WeatherSource {
+    private string $apiKey;
 
-
-class WeatherSourse {
-    private $apiKey;
-
-    public function __construct($apiKey) {
+    public function __construct(string $apiKey) {
         $this->apiKey = $apiKey;
     }
 
-    public function fetchData($page) {
-        $url = "https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid={$this->apiKey}&cnt=" . ITEMS_PER_PAGE;
-        $response = @file_get_contents($url);
+    public function fetchData(int $page): array {
+        $url = "https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid={$this->apiKey}&units=metric";
+        $data = @file_get_contents($url);
+        if (!$data) return ['data' => [], 'total_pages' => 0, 'error' => 'Weather API fetch failed'];
 
-        if ($response === false) {
-            return ['data' => [], 'total_pages' => 0];
-        }
-
-        $data = json_decode($response, true);
-        if (!$data || !isset($data['list'])) {
-            return ['data' => [], 'total_pages' => 0];
+        $json = json_decode($data, true);
+        if (!isset($json['weather'][0]['description'])) {
+            return ['data' => [], 'total_pages' => 0, 'error' => 'Invalid weather data'];
         }
 
         return [
-            'data' => $data['list'],
+            'data' => [[
+                'title' => $json['name'] ?? 'Unknown location',
+                'description' => $json['weather'][0]['description'],
+                'temp' => $json['main']['temp'] . '°C'
+            ]],
             'total_pages' => 1
         ];
     }

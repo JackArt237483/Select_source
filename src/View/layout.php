@@ -2,48 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Fetcher</title>
     <link rel="stylesheet" href="../../public/style.css">
+    <style>
+        .container { max-width: 800px; margin: 0 auto; font-family: sans-serif; }
+        .pagination a { margin: 0 5px; text-decoration: none; }
+        .pagination .active { font-weight: bold; }
+    </style>
 </head>
 <body>
 <div class="container">
     <h1>Data Fetcher</h1>
-    <form method="GET" action="">
-        <label for="source">Select Data Source:</label>
-        <select name="source" id="source">
-            <?php foreach ($sources as $key => $name): ?>
-                <option value="<?= htmlspecialchars($key) ?>" <?= $source === $key ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($name) ?>
-                </option>
-            <?php endforeach; ?>
+    <form id="fetch-form">
+        <label for="source">Choose data source:</label>
+        <select id="source">
+            <option value="news">News API</option>
+            <option value="weather">Weather API</option>
         </select>
-        <input type="hidden" name="fetch" value="1">
-        <button type="submit">Fetch Data</button>
+        <button type="submit">Fetch</button>
     </form>
-
-    <div class="results">
-        <?php if (!empty($results['renderItems'])): ?>
-            <h2>Results</h2>
-            <ul>
-                <?php foreach ($results['renderItems'] as $text): ?>
-                    <li><?= htmlspecialchars($text) ?></li>
-                <?php endforeach; ?>
-            </ul>
-            <?php if ($results['total_pages'] > 1): ?>
-                <div class="pagination">
-                    <?php for ($i = 1; $i <= $results['total_pages']; $i++): ?>
-                        <a href="/?source=<?= urlencode($source) ?>&page=<?= $i ?>&fetch=1"
-                           class="<?= $page === $i ? 'active' : '' ?>">
-                            <?= $i ?>
-                        </a>
-                    <?php endfor; ?>
-                </div>
-            <?php endif; ?>
-        <?php elseif (isset($_GET['fetch'])): ?>
-            <p>No data available or an error occurred.</p>
-        <?php endif; ?>
-    </div>
+    <div id="results"></div>
 </div>
+
+<script>
+    const form = document.getElementById('fetch-form');
+    const results = document.getElementById('results');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        loadData(1);
+    });
+
+    async function loadData(page) {
+        const source = document.getElementById('source').value;
+        results.innerHTML = 'Loading...';
+
+        const res = await fetch(`/?source=${source}&page=${page}`);
+        const data = await res.json();
+
+        if (data.error) {
+            results.innerHTML = `<p class="error">${data.error}</p>`;
+            return;
+        }
+
+        const items = data.data.map(item => `
+            <li>
+                <strong>${item.title}</strong><br>
+                ${item.description}<br>
+                ${item.url ? `<a href="${item.url}" target="_blank">Read more</a>` : item.temp || ''}
+            </li>
+        `).join('');
+
+        let pagination = '';
+        for (let i = 1; i <= data.total_pages; i++) {
+            pagination += `<a href="#" onclick="loadData(${i})" class="${i === page ? 'active' : ''}">${i}</a>`;
+        }
+
+        results.innerHTML = `<ul>${items}</ul><div class="pagination">${pagination}</div>`;
+    }
+</script>
 </body>
 </html>

@@ -1,46 +1,23 @@
 <?php
-
 namespace Src\Controller;
 
-use Exception;
-use Src\Service\NewsSourse;
-use Src\Service\WeatherSourse;
+use Src\Service\NewsSource;
+use Src\Service\WeatherSource;
 
-class MainController {
-    private $apiKey;
-
-    public function __construct(array $apiKey) {
-        $this->apiKey = $apiKey;
-    }
-
-    public function index($sourceKey, $page, $fetch) {
-        $sources = ['weather' => 'Weather API', 'news' => 'News API'];
-        $results = ['data' => [], 'total_pages' => 0, 'renderItems' => []];
-        $source = $sourceKey;
-
-        if ($fetch && isset($sources[$sourceKey])) {
-            try {
-                switch ($sourceKey) {
-                    case 'weather':
-                        $service = new WeatherSourse($this->apiKey['weather']);
-                        break;
-                    case 'news':
-                        $service = new NewsSourse($this->apiKey['news']);
-                        break;
-                }
-
-                $results = $service->fetchData($page);
-
-                $results['renderItems'] = array_map(function ($item) use ($sourceKey) {
-                    return $sourceKey === 'news'
-                        ? ($item['title'] ?? 'No title')
-                        : ($item['weather'][0]['description'] ?? 'No description');
-                }, $results['data']);
-            } catch (Exception $e) {
-                error_log('Error in MainController: ' . $e->getMessage());
-            }
+class ApiController {
+    public function fetch(string $source, int $page): array {
+        switch ($source) {
+            case 'news':
+                $service = new NewsSource(NEWS_API_KEY);
+                break;
+            case 'weather':
+                $service = new WeatherSource(WEATHER_API_KEY);
+                break;
+            default:
+                return ['error' => 'Invalid data source'];
         }
 
-        require_once __DIR__ . '../../View/layout.php';
+        return $service->fetchData($page);
     }
+
 }

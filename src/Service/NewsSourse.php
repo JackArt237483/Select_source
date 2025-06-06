@@ -1,30 +1,34 @@
 <?php
 namespace Src\Service;
 
+class NewsSource {
+    private string $apiKey;
 
-class NewsSourse {
-    private $apiKey;
-
-    public function __construct($apiKey) {
+    public function __construct(string $apiKey) {
         $this->apiKey = $apiKey;
     }
 
-    public function fetchData($page) {
-        $url = "https://newsapi.org/v2/everything?q=Apple&from=2025-06-03&sortBy=popularity&apiKey={$this->apiKey}&pageSize=" . ITEMS_PER_PAGE . "&page=" . $page;
-        $response = @file_get_contents($url);
+    public function fetchData(int $page): array {
+        $url = sprintf(
+            'https://newsapi.org/v2/everything?q=Apple&sortBy=popularity&pageSize=%d&page=%d&apiKey=%s',
+            ITEMS_PER_PAGE,
+            $page,
+            $this->apiKey
+        );
 
-        if ($response === false) {
-            return ['data' => [], 'total_pages' => 0];
-        }
+        $data = @file_get_contents($url);
+        if (!$data) return ['data' => [], 'total_pages' => 0, 'error' => 'News API fetch failed'];
 
-        $data = json_decode($response, true);
-        if (!$data || !isset($data['articles'])) {
-            return ['data' => [], 'total_pages' => 0];
-        }
+        $json = json_decode($data, true);
+        $articles = $json['articles'] ?? [];
 
         return [
-            'data' => $data['articles'],
-            'total_pages' => ceil($data['totalResults'] / ITEMS_PER_PAGE)
+            'data' => array_map(fn($item) => [
+                'title' => $item['title'] ?? 'No title',
+                'description' => $item['description'] ?? 'No description',
+                'url' => $item['url'] ?? '#'
+            ], $articles),
+            'total_pages' => ceil(($json['totalResults'] ?? 0) / ITEMS_PER_PAGE)
         ];
     }
 }

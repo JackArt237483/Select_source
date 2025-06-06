@@ -1,20 +1,18 @@
+
 <?php
 namespace Src;
 
-use Src\Controller\MainController;
+require_once __DIR__ . '/Controller/MainController.php';
 
 class Router {
-    private $controller;
-
-    public function __construct(array $apiKeys) {
-        $this->controller = new MainController($apiKeys);
-    }
-
     public function handleRequest() {
-        $source = $_GET['source'] ?? 'news';
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $fetch = isset($_GET['fetch']);
+        if (isset($_GET['source']) && isset($_GET['page'])) {
+            header('Content-Type: application/json');
+            $controller = new \Src\Controller\MainController();
+            echo $controller->fetchData($_GET['source'], $_GET['page']);
+            return;
+        }
 
-        $this->controller->index($source, $page, $fetch);
+        require_once __DIR__ . '/../view/layout.php';
     }
 }
