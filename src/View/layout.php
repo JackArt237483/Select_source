@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Data Fetcher</title>
     <link rel="stylesheet" href="../../public/style.css">
+    <link rel="stylesheet" href="/project/select/Select_source/public/style.css">
     <style>
         .container { max-width: 800px; margin: 0 auto; font-family: sans-serif; }
         .pagination a { margin: 0 5px; text-decoration: none; }
@@ -37,9 +38,8 @@
         const source = document.getElementById('source').value;
         results.innerHTML = 'Loading...';
 
-        const res = await fetch(`/?source=${source}&page=${page}`);
-        const data = await res.json();
-
+   const res = await fetch(`/?source=${source}&page=${page}`);
+    const contentType = res.headers.get("content-type");
         if (data.error) {
             results.innerHTML = `<p class="error">${data.error}</p>`;
             return;

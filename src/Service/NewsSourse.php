@@ -1,7 +1,7 @@
 <?php
 namespace Src\Service;
 
-class NewsSource {
+class NewsSourse {
     private string $apiKey;
 
     public function __construct(string $apiKey) {

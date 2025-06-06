@@ -1,7 +1,9 @@
 <?php
 namespace Src\Service;
 
-class WeatherSource {
+require_once __DIR__ . '/DataSourceInterface.php';
+
+class WeatherSourse implements DataSourceInterface {
     private string $apiKey;
 
     public function __construct(string $apiKey) {
