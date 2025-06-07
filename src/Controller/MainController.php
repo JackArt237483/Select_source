@@ -4,8 +4,6 @@ namespace Src\Controller;
 use Src\Service\NewsSource;
 use Src\Service\WeatherSource;
 
-require_once __DIR__ . '/../Service/NewsSource.php';
-require_once __DIR__ . '/../Service/WeatherSource.php';
 
 class MainController
 {

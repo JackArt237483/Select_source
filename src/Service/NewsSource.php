@@ -5,28 +5,16 @@ class NewsSource implements DataSourceInterface
 {
     private string $apiKey;
 
-    /**
-     * Constructor
-     *
-     * @param string $apiKey API key for GNews API
-     */
     public function __construct(string $apiKey)
     {
         $this->apiKey = $apiKey;
     }
 
-    /**
-     * Fetch news articles from GNews API with pagination
-     *
-     * @param int $page 1-based page number
-     * @return array ['data' => [...], 'total_pages' => int, 'error' => string|null]
-     */
     public function fetchData(int $page): array
     {
-        $maxPerPage = ITEMS_PER_PAGE;
+        $maxPerPage = defined('ITEMS_PER_PAGE') ? ITEMS_PER_PAGE : 10;
         $start = ($page - 1) * $maxPerPage;
 
-        // GNews API URL
         $url = sprintf(
             'https://gnews.io/api/v4/search?q=Apple&lang=en&country=us&max=%d&apikey=%s&start=%d',
             $maxPerPage,
@@ -34,7 +22,6 @@ class NewsSource implements DataSourceInterface
             $start
         );
 
-        // Use curl for better error handling and timeout
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
@@ -54,25 +41,19 @@ class NewsSource implements DataSourceInterface
         }
 
         $json = json_decode($response, true);
-        if (!is_array($json) || !isset($json['articles'])) {
+        if (!isset($json['articles']) || !is_array($json['articles'])) {
             return ['data' => [], 'total_pages' => 0, 'error' => 'Invalid response from News API'];
         }
 
-        $articles = $json['articles'];
-
-        // Map data to uniform format
         $data = array_map(fn($item) => [
             'title' => $item['title'] ?? 'No title',
             'description' => $item['description'] ?? 'No description',
             'url' => $item['url'] ?? '#'
-        ], $articles);
-
-        // GNews API does not provide total results count reliably, set static 10 pages max
-        $totalPages = 10;
+        ], $json['articles']);
 
         return [
             'data' => $data,
-            'total_pages' => $totalPages
+            'total_pages' => 10
         ];
     }
 }

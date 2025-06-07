@@ -5,28 +5,20 @@ class WeatherSource implements DataSourceInterface
 {
     private string $apiKey;
 
-    /**
-     * Constructor
-     *
-     * @param string $apiKey API key for OpenWeatherMap
-     */
     public function __construct(string $apiKey)
     {
         $this->apiKey = $apiKey;
     }
 
-    /**
-     * Fetch current weather data (pagination ignored since only one data point)
-     *
-     * @param int $page Ignored
-     * @return array ['data' => [...], 'total_pages' => 1, 'error' => string|null]
-     */
     public function fetchData(int $page): array
     {
-        $url = "https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=" .
+        // Пример: координаты для демо (Модена, Италия)
+        $lat = 44.34;
+        $lon = 10.99;
+
+        $url = "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid=" .
             urlencode($this->apiKey) . "&units=metric";
 
-        // Use curl
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
@@ -54,7 +46,7 @@ class WeatherSource implements DataSourceInterface
         return [
             'data' => [[
                 'title' => $json['name'],
-                'description' => $json['weather'][0]['description'],
+                'description' => ucfirst($json['weather'][0]['description']),
                 'temp' => $json['main']['temp'] . '°C'
             ]],
             'total_pages' => 1
